@@ -48,6 +48,7 @@ func (service *postService) Add(ctx context.Context, reqPost *dto.RequestPost) (
 		Asset:       reqPost.Asset,
 		Fiat:        reqPost.Fiat,
 		PriceMargin: reqPost.PriceMargin,
+		Price:       reqPost.Price,
 		Description: reqPost.Description,
 		UserID:      reqPost.UserID,
 		CreatedAt:   time.Now(),

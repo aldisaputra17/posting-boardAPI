@@ -7,7 +7,6 @@ import (
 	"github.com/aldisaputra17/posting-board/controllers"
 	"github.com/aldisaputra17/posting-board/databases"
 
-	// "github.com/aldisaputra17/posting-board/dummy"
 	"github.com/aldisaputra17/posting-board/repositories"
 	"github.com/aldisaputra17/posting-board/services"
 	"github.com/gin-gonic/gin"

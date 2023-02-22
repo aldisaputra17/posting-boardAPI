@@ -10,10 +10,12 @@ func CreateCrypto(db *gorm.DB) {
 	// var crypto *entities.Crypto
 	id, _ := uuid.NewRandom()
 
-	crypto := &entities.Crypto{
-		ID:    id,
-		Asset: "BTC",
-		Value: 12000,
+	for i := 0; i < 100; i++ {
+		crypto := &entities.Crypto{
+			ID:    id,
+			Asset: "Doge",
+			Value: 19000000,
+		}
+		db.Create(crypto)
 	}
-	db.Create(crypto)
 }

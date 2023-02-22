@@ -15,6 +15,7 @@ type PostRepository interface {
 	Add(ctx context.Context, post *entities.Post) (*entities.Post, error)
 	Deleted(ctx context.Context, post entities.Post) error
 	FindById(ctx context.Context, id string, userID string) (*entities.Post, error)
+	FindID(ctx context.Context, id string) ([]*entities.Post, error)
 	FindByUserID(ctx context.Context, userID string) ([]*entities.Post, error)
 	CommentMost(ctx context.Context, paginate *entities.Pagination) (helpers.PaginationResult, int)
 	LikeMost(ctx context.Context, paginate *entities.Pagination) (helpers.PaginationResult, int)
@@ -40,14 +41,12 @@ func (db *postConnection) Add(ctx context.Context, post *entities.Post) (*entiti
 	if err != nil {
 		return nil, err
 	}
-	if post.Asset == userItem.Asset {
-		post.Price = userItem.Value
-	}
-	post.ResultPrice = float64(userItem.Value) * post.PriceMargin
-	res := db.connection.WithContext(ctx).Create(&post)
+	post.ResultPrice = float64(post.Price) * post.PriceMargin
+	res := db.connection.WithContext(ctx).Preload("User").Preload("Comments").Preload("Likes").Create(&post)
 	if res.Error != nil {
 		return nil, res.Error
 	}
+	db.connection.Model(&userItem).Update("value", gorm.Expr("value - ?", post.Price))
 	return post, nil
 }
 
@@ -61,7 +60,7 @@ func (db *postConnection) Deleted(ctx context.Context, post entities.Post) error
 
 func (db *postConnection) ListPublic(ctx context.Context) ([]*entities.Post, error) {
 	var posts []*entities.Post
-	res := db.connection.WithContext(ctx).Preload("User").Find(&posts)
+	res := db.connection.WithContext(ctx).Preload("User").Preload("Comments").Preload("Likes").Find(&posts)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -70,7 +69,7 @@ func (db *postConnection) ListPublic(ctx context.Context) ([]*entities.Post, err
 
 func (db *postConnection) ListPrivate(ctx context.Context, userID string) ([]*entities.Post, error) {
 	var posts []*entities.Post
-	res := db.connection.WithContext(ctx).Where("user_id = ?", userID).Find(&posts)
+	res := db.connection.WithContext(ctx).Where("user_id = ?", userID).Preload("User").Preload("Comments.User").Preload("Likes").Find(&posts)
 	if res.Error != nil {
 		return nil, res.Error
 	}
@@ -109,7 +108,7 @@ func (db *postConnection) CommentMost(ctx context.Context, paginate *entities.Pa
 			find = find.Where(whereQuery, queryArray)
 		}
 	}
-	find = find.Find(&post)
+	find = find.Preload("User").Preload("Comments").Preload("Likes").Find(&post)
 	errFind := find.Error
 
 	if errFind != nil {
@@ -180,7 +179,7 @@ func (db *postConnection) LikeMost(ctx context.Context, paginate *entities.Pagin
 			find = find.Where(whereQuery, queryArray)
 		}
 	}
-	find = find.Find(&post)
+	find = find.Preload("User").Preload("Comments").Preload("Likes").Find(&post)
 	errFind := find.Error
 
 	if errFind != nil {
@@ -231,6 +230,15 @@ func (db *postConnection) FindByUserID(ctx context.Context, userID string) ([]*e
 func (db *postConnection) FindById(ctx context.Context, id string, userID string) (*entities.Post, error) {
 	var post *entities.Post
 	res := db.connection.WithContext(ctx).Where("id = ? and user_id = ?", id, userID).Find(&post)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return post, nil
+}
+
+func (db *postConnection) FindID(ctx context.Context, id string) ([]*entities.Post, error) {
+	var post []*entities.Post
+	res := db.connection.WithContext(ctx).Where("id = ?", id).Find(&post)
 	if res.Error != nil {
 		return nil, res.Error
 	}
