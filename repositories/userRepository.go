@@ -12,7 +12,6 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *entities.User) (*entities.User, error)
 	FindByID(ctx context.Context, id string) (*entities.User, error)
-	UpdateValue(ctx context.Context, id string) error
 	VerifyCredential(email string, password string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
 }
@@ -64,22 +63,6 @@ func (db *userConnection) FindByID(ctx context.Context, id string) (*entities.Us
 		return nil, res.Error
 	}
 	return user, nil
-}
-
-func (db *userConnection) UpdateValue(ctx context.Context, id string) error {
-	var user *entities.User
-	// pRr := NewPostRepository(db.connection)
-	// // ids := fmt.Sprintf("%v", user.ID)
-	// postItem, err := pRr.FindID(ctx, user.PostID)
-	// if err != nil {
-	// 	return err
-	// }
-	// resultVal := user.Value - postItem[0].Price
-	res := db.connection.WithContext(ctx).Model(&user).Where("id = ?", id).Update("value", gorm.Expr("value = ?", user.Value))
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
 }
 
 func hashAndSalt(pwd []byte) string {

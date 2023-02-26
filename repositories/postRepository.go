@@ -15,7 +15,6 @@ type PostRepository interface {
 	Add(ctx context.Context, post *entities.Post) (*entities.Post, error)
 	Deleted(ctx context.Context, post entities.Post) error
 	FindById(ctx context.Context, id string, userID string) (*entities.Post, error)
-	FindID(ctx context.Context, id string) ([]*entities.Post, error)
 	FindByUserID(ctx context.Context, userID string) ([]*entities.Post, error)
 	CommentMost(ctx context.Context, paginate *entities.Pagination) (helpers.PaginationResult, int)
 	LikeMost(ctx context.Context, paginate *entities.Pagination) (helpers.PaginationResult, int)
@@ -230,15 +229,6 @@ func (db *postConnection) FindByUserID(ctx context.Context, userID string) ([]*e
 func (db *postConnection) FindById(ctx context.Context, id string, userID string) (*entities.Post, error) {
 	var post *entities.Post
 	res := db.connection.WithContext(ctx).Where("id = ? and user_id = ?", id, userID).Find(&post)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	return post, nil
-}
-
-func (db *postConnection) FindID(ctx context.Context, id string) ([]*entities.Post, error) {
-	var post []*entities.Post
-	res := db.connection.WithContext(ctx).Where("id = ?", id).Find(&post)
 	if res.Error != nil {
 		return nil, res.Error
 	}

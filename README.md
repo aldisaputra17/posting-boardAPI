@@ -12,6 +12,6 @@
 
 # Getting Started
 
-- Docker Pull Images in Docker Hub (https://hub.docker.com/r/aldisaput17/posting-board_app).
+- Docker Pull Images in Docker Hub (https://hub.docker.com/repository/docker/aldisaput17/posting-board_app/general).
 - Setup .env in local 
 - Run Docker
